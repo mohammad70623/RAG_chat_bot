@@ -2,7 +2,7 @@ import os
 from langchain_huggingface import HuggingFaceEndpoint
 from langchain_core.prompts import PromptTemplate
 from langchain.chains import RetrievalQA
-from langchain_huggingface import HuggingFaceEndpoint
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 
 #step 1: setup LLM (Mistral with huggingface)
@@ -33,6 +33,12 @@ Start the answer directly. no sall talk please.
 def set_custom_prompt(custom_prompt_template):
     prompt = PromptTemplate(template = custom_prompt_template, input_variables = ["context", "question"])
     return prompt 
+
+#Load Dataset 
+
+DB_FAISS_PATH = "vectorestore/db_faiss"
+embedding_model = HuggingFaceEmbeddings(model_name ="sentence-transformers/all-MiniLM-L6-v2" )
+db = FAISS.load_local(DB_FAISS_PATH, embedding_model, allow_dangerous_deserialization = True)
 
 
 
