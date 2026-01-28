@@ -7,7 +7,7 @@ from langchain_community.vectorstores import FAISS
 
 #step 1: setup LLM (Mistral with huggingface)
 HF_TOKEN = os.environ.get("HF_TOKEN")
-huggingface_repo_id = "mistralai/Mistral-7B-Instruct-v0.3"
+HUGGINGFACE_REPO_ID = "mistralai/Mistral-7B-Instruct-v0.3"
 
 def load_llm(huggingface_repo_id):
     llm = HuggingFaceEndpoint(
@@ -21,7 +21,7 @@ def load_llm(huggingface_repo_id):
 
 #step 2: Connec LLM with FAISS and create chain 
 DB_FAISS_PATH = "vectorstore/db_faiss"
-custom_prompt_template = """ 
+CUSTOM_PROMPT_TEMPLATE = """ 
 Use the pieces of information provided in the contexrt to answer user's question.
 If you dont know the answer, just say thst dont know, dont try to make up a answer.
 Dont provide anything out of the given context.
@@ -40,6 +40,14 @@ DB_FAISS_PATH = "vectorestore/db_faiss"
 embedding_model = HuggingFaceEmbeddings(model_name ="sentence-transformers/all-MiniLM-L6-v2" )
 db = FAISS.load_local(DB_FAISS_PATH, embedding_model, allow_dangerous_deserialization = True)
 
+#Create QA Chain 
 
+qa_chain = RetrievalQA.from_chain_type(
+    llm = load_llm(HUGGINGFACE_REPO_ID),
+    chain_type = "stuff",
+    retriever = db.as_retriever(search_kwargs={'k':3}),
+    return_source_documents = True,
+    chain_type_kwargs={'prompt':set_custom_prompt(CUSTOM_PROMPT_TEMPLATE)}
+)
 
 
