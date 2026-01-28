@@ -15,7 +15,7 @@ def load_pdf_files(data):
     return documents 
     
 documents = load_pdf_files(data=DATA_PATH)
-print("Length of pdf", len(documents))
+#print("Length of pdf", len(documents))
 
 #Step 2: Creat Chunks
 def creat_chunks(extracted_data): 
@@ -24,7 +24,7 @@ def creat_chunks(extracted_data):
     text_chunks = text_splitter.split_documents(extracted_data)
     return text_chunks 
 text_chunks = creat_chunks(extracted_data = documents)
-print("Length of chunks:", len(text_chunks))
+#print("Length of chunks:", len(text_chunks))
 
 #Step 3: Creat Vector Embedding
 
@@ -39,4 +39,3 @@ DB_FAISS_PATH = "vectorstore/db_faiss"
 os.makedirs(os.path.dirname(DB_FAISS_PATH), exist_ok=True)
 db = FAISS.from_documents(text_chunks, embedding_model)
 db.save_local(DB_FAISS_PATH)
-print("FAISS DB saved at:", DB_FAISS_PATH)
