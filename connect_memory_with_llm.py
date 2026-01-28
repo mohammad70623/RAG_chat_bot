@@ -1,58 +1,79 @@
-import os 
-from langchain_huggingface import HuggingFaceEndpoint
+import os
+from dotenv import load_dotenv
 from langchain_core.prompts import PromptTemplate
-from langchain.chains import RetrievalQA
+from langchain_classic.chains.retrieval_qa.base import RetrievalQA
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
+from langchain_groq import ChatGroq
 
-#step 1: setup LLM (Mistral with huggingface)
-HF_TOKEN = os.environ.get("HF_TOKEN")
-HUGGINGFACE_REPO_ID = "mistralai/Mistral-7B-Instruct-v0.3"
 
-def load_llm(huggingface_repo_id):
-    llm = HuggingFaceEndpoint(
-        repo_id =huggingface_repo_id,
-        temperature = 0.5 ,
-        model_kwargs = {
-            "token": HF_TOKEN,
-            "max_length": 512}
+# Step 1: Load env & Groq LLM
+
+load_dotenv()
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
+GROQ_MODEL_NAME = "llama-3.1-8b-instant"
+
+def load_llm():
+    llm = ChatGroq(
+        groq_api_key=GROQ_API_KEY,
+        model_name=GROQ_MODEL_NAME,
+        temperature=0.5,
+        max_tokens=512
     )
-    return llm 
+    return llm
 
-#step 2: Connec LLM with FAISS and create chain 
-DB_FAISS_PATH = "vectorstore/db_faiss"
-CUSTOM_PROMPT_TEMPLATE = """ 
-Use the pieces of information provided in the contexrt to answer user's question.
-If you dont know the answer, just say thst dont know, dont try to make up a answer.
-Dont provide anything out of the given context.
+
+
+# Step 2: Prompt
+
+CUSTOM_PROMPT_TEMPLATE = """
+Use the pieces of information provided in the context to answer the user's question.
+If you don't know the answer, just say that you don't know.
+Don't try to make up an answer.
+Don't provide anything outside the given context.
 
 Context:{context}
 Question:{question}
-Start the answer directly. no sall talk please. 
+
+Start the answer directly. No small talk.
 """
+
 def set_custom_prompt(custom_prompt_template):
-    prompt = PromptTemplate(template = custom_prompt_template, input_variables = ["context", "question"])
-    return prompt 
+    prompt = PromptTemplate(
+        template=custom_prompt_template,
+        input_variables=["context", "question"]
+    )
+    return prompt
 
-#Load Dataset 
+# Step 3: Load FAISS DB
 
-DB_FAISS_PATH = "vectorestore/db_faiss"
-embedding_model = HuggingFaceEmbeddings(model_name ="sentence-transformers/all-MiniLM-L6-v2" )
-db = FAISS.load_local(DB_FAISS_PATH, embedding_model, allow_dangerous_deserialization = True)
-
-#Create QA Chain 
-
-qa_chain = RetrievalQA.from_chain_type(
-    llm = load_llm(HUGGINGFACE_REPO_ID),
-    chain_type = "stuff",
-    retriever = db.as_retriever(search_kwargs={'k':3}),
-    return_source_documents = True,
-    chain_type_kwargs={'prompt':set_custom_prompt(CUSTOM_PROMPT_TEMPLATE)}
+DB_FAISS_PATH = "vectorstore/db_faiss"
+embedding_model = HuggingFaceEmbeddings(
+    model_name="sentence-transformers/all-MiniLM-L6-v2"
 )
 
-#Now invoke with a single query 
-user_query = input("Write Query here :")
-response = qa_chain.invoke({'query': user_query})
-print("RESULT:", response["result"])
-print("SOURCE DOCUMENTs:", response["source_documents"])
+db = FAISS.load_local(
+    DB_FAISS_PATH,
+    embedding_model,
+    allow_dangerous_deserialization=True
+)
 
+
+# Step 4: Create Retrieval QA Chain
+
+qa_chain = RetrievalQA.from_chain_type(
+    llm=load_llm(),
+    chain_type="stuff",
+    retriever=db.as_retriever(search_kwargs={"k": 3}),
+    return_source_documents=True,
+    chain_type_kwargs={
+        "prompt": set_custom_prompt(CUSTOM_PROMPT_TEMPLATE)
+    }
+)
+
+# Step 5: Query
+
+user_query = input("Write Query here: ")
+response = qa_chain.invoke({"query": user_query})
+print("\nRESULT:\n", response["result"])
+print("\nSOURCE DOCUMENTS:\n", response["source_documents"])

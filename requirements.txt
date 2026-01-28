@@ -1,0 +1,23 @@
+# LangChain
+langchain
+langchain-community
+langchain-core
+langchain-huggingface
+
+# Vector Store
+faiss-cpu
+
+# Hugging Face & Transformers
+transformers
+huggingface-hub
+sentence-transformers
+
+# PyTorch
+torch
+
+# Environment variables
+python-dotenv
+
+# Utilities
+numpy
+tqdm
