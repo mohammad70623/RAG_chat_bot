@@ -8,13 +8,12 @@ from langchain_groq import ChatGroq
 
 # ─── Step 1: Load Environment & Groq LLM ──────────────────────────────────────
 load_dotenv()
-
-GROQ_API_KEY    = os.environ.get("GROQ_API_KEY")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 GROQ_MODEL_NAME = "llama-3.1-8b-instant"
 
 def load_llm():
     llm = ChatGroq(
-        groq_api_key=GROQ_API_KEY,
+        groq_api_key=os.getenv("GROQ_API_KEY"),
         model_name=GROQ_MODEL_NAME,
         temperature=0.5,
         max_tokens=512
