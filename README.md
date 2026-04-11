@@ -50,4 +50,8 @@ At query time: question → similarity search → top 3 chunks → Groq LLM → 
 
 ---
 
+## 🖥️ UI Preview
+
+![RAG Chatbot UI](assets/ui.png)
+
 > Answers are limited to what's in your documents. If it's not there, the bot says so.
