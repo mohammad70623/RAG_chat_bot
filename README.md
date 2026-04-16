@@ -23,7 +23,7 @@ pip install -r requirements.txt
 GROQ_API_KEY=your_key_here
 
 # 3. Drop PDFs into data/ then build the index
-python store_index.py
+python create_memory_for_llm.py
 
 # 4. Run
 streamlit run app.py
